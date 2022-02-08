@@ -1,0 +1,96 @@
+---
+title: "CollegeData"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r loadcsv}
+collegedata = read.csv("MERGED2019_20_PP.csv")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+```{r}
+library(dplyr)
+highadmithighendow = collegedata %>% filter(ADM_RATE > 0.3) %>% filter(ENDOWBEGIN > 10^5)
+#which(collegedata["ADM_RATE"] <= 0.2)
+```
+
+
+```{r, echo=FALSE}
+plot(highadmithighendow$ENDOWBEGIN,highadmithighendow$ADM_RATE)
+#plot(collegedata$ENDOWBEGIN,collegedata$ADM_RATE)
+#plot((collegedata %>% filter(ADM_RATE < 0.7))$ENDOWBEGIN,(collegedata %>% filter(ADM_RATE < 0.7))$ADM_RATE)
+```
+```{r}
+install.packages("skimr")
+
+```
+
+75% of institutions have a 56%+ acceptance rate:
+```{r}
+admrates = sapply(collegedata["ADM_RATE"],as.numeric)
+admrates<-admrates[!is.na(admrates)]
+#admrates
+skim(admrates) %>% tibble::as_tibble()
+print(length(admrates))
+#(collegedata %>% filter(!is.na(ADM_RATE)))["ADM_RATE"]
+#summary(collegedata$ADM_RATE)
+```
+The median endowment is around \$18 million:
+```{r}
+endow = sapply(collegedata["ENDOWBEGIN"],as.numeric)
+endow<-endow[!is.na(endow)]
+#admrates
+skim(endow) %>% tibble::as_tibble()
+print(length(endow))
+```
+
+The median number of undergrads is just 761, and the twenty-fifth percentile is just 180 undergrads!
+```{r}
+undergrads = sapply(collegedata["UG12MN"],as.numeric)
+undergrads<-undergrads[!is.na(undergrads)]
+#admrates
+skim(undergrads) %>% tibble::as_tibble()
+```
+
+
+The distribution of number of grad students is similar to that of the distribution of undergrad students, but this distribution is probably more left-heavy due to there (almost certainly) being few institutions with a huge number of grad students.
+```{r}
+grads = sapply(collegedata["G12MN"],as.numeric)
+grads<-grads[!is.na(grads)]
+#admrates
+skim(grads) %>% tibble::as_tibble()
+```
+
+The high bar at -2 corresponds to the high number of institutions for which the Carnegie Classification does not apply. We need to understand what's going on with the insitutions for which the Carnegie Classification does not apply and the instiuttions that have various other kinds of missing values. 
+```{r}
+hist(sapply(collegedata["CCBASIC"],as.numeric),xlab = "Classification",main = "Histogram for Type of Institution (Under Carnegie Classification)")
+```
+To get a sense of what kind of institutions have missing values, I summarized the acceptance rates of institutions for which the basic Carnegie classification does not apply. I found that the acceptance rates are higher, with the difference the highest in the 75th percentile.
+```{r}
+basiccarnegiemissing = collegedata %>% filter(CCBASIC == "-2")
+admrates2 = sapply(basiccarnegiemissing["ADM_RATE"],as.numeric)
+admrates2<-admrates2[!is.na(admrates)]
+#admrates
+skim(admrates2) %>% tibble::as_tibble()
+print(length(admrates2))
+```
+
+grad students
+number of students by institution type
+summarize which observations are missing
+try to group into a single table
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
